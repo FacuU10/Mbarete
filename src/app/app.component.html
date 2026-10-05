@@ -1,0 +1,186 @@
+<div class="page-shell">
+  <!-- Navbar moderna -->
+  <nav class="modern-navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <img [src]="logoUrl" alt="Logo Posada Mbarete" class="nav-logo" />
+      </div>
+      <div class="nav-links">
+        <a href="#experiencias" class="nav-link">Experiencias</a>
+        <a href="#alojamiento" class="nav-link">Alojamiento</a>
+        <button class="btn btn-primary nav-btn" (click)="enviarWhatsApp()">Reservar</button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <img src="assets/hero-piscina.jpg" alt="Piscina de Posada Mbarete" class="hero-image" />
+
+    <div class="hero-content">
+      <p class="eyebrow fade-in-up">Tu refugio en la laguna</p>
+      <h1 class="fade-in-up delay-1">Posada Mbarete</h1>
+      <p class="lead fade-in-up delay-2">Conocé los Esteros del Iberá desde un entorno cálido, natural y auténtico.</p>
+
+      <div class="hero-actions fade-in-up delay-3">
+        <button class="btn btn-primary" (click)="enviarWhatsApp()">Consultar disponibilidad</button>
+        <a href="#experiencias" class="btn btn-secondary">Descubrir más</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="marquee-separator">
+    <div class="marquee-track">
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+      <img src="assets/logo-marquee.png" alt="Posada Mbarete" />
+    </div>
+  </div>
+
+  <main>
+    <section class="intro section-shell">
+      <div class="intro-copy">
+        <p class="section-kicker">Sobre la posada</p>
+        <h2>Un descanso en la naturaleza, rodeado de humedales y silencio.</h2>
+        <p>
+          En Posada Mbarete te invitamos a vivir una experiencia cercana, tranquila y auténtica en el corazón de los Esteros del Iberá.
+          Aquí la calma se respira, la naturaleza se escucha y cada día propone una nueva forma de conectar con la tierra.
+        </p>
+        <p>
+          Ideal para quienes buscan desconectarse, recorrer paisajes únicos y disfrutar de un lugar pensado para descansar con estilo y comodidad.
+        </p>
+
+        <div class="check-list">
+          @for (punto of puntos(); track punto) {
+            <div class="check-item">
+              <span>✔️</span>
+              <p>{{ punto }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="intro-visual">
+        <img src="assets/nueva-habitacion.jpg" alt="Habitación de Posada Mbarete" />
+      </div>
+    </section>
+
+    <section id="experiencias" class="section-shell experiences">
+      <div class="section-heading center">
+        <p class="section-kicker">Experiencias</p>
+        <h2>Descubrí el Iberá con calma y esencia</h2>
+      </div>
+
+      <div class="cards-grid four-col">
+        @for (exp of experiencias(); track exp.titulo) {
+          <article class="feature-card dark-card">
+            <h3>{{ exp.titulo }}</h3>
+            <p>{{ exp.desc }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="section-shell night-section">
+      <div class="night-copy">
+        <p class="section-kicker">Noche en el Iberá</p>
+        <h2>Disfrutá de la noche en los Esteros en nuestro muelle.</h2>
+        <p>
+          La noche en los Esteros tiene una magia especial: el cielo estrellado, el sonido del agua y la quietud del entorno te invitan a quedarte un momento más.
+          En nuestro muelle, el descanso se vuelve un ritual: mirar el cielo, compartir una charla, escuchar el paisaje y dejar que la noche te recorra despacio.
+        </p>
+      </div>
+      <div class="night-visual">
+        <img src="assets/nochembarete.jpg" alt="Noche en los Esteros" />
+      </div>
+    </section>
+
+    <section class="section-shell gallery-section">
+      <div class="section-heading center">
+        <p class="section-kicker">Nuestra propuesta</p>
+        <h2>Un lugar pensado para relajarse y disfrutar</h2>
+      </div>
+
+      <div class="carousel-wrapper">
+        <div class="carousel-inner" [style.transform]="'translateX(-' + currentImageIndex() * 100 + '%)'">
+          @for (item of galeria(); track item.titulo) {
+            <figure class="carousel-item">
+              <img [src]="item.url" [alt]="item.titulo" />
+              <div class="carousel-caption">
+                <h3>{{ item.titulo }}</h3>
+              </div>
+            </figure>
+          }
+        </div>
+        <button class="carousel-btn prev" (click)="prevImage()">&#10094;</button>
+        <button class="carousel-btn next" (click)="nextImage()">&#10095;</button>
+        <div class="carousel-indicators">
+          @for (item of galeria(); track item.titulo; let i = $index) {
+            <button class="dot" [class.active]="currentImageIndex() === i" (click)="setImage(i)"></button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="alojamiento" class="section-shell rooms-section">
+      <div class="section-heading center">
+        <p class="section-kicker">Alojamiento</p>
+        <h2>Cabañas y suites para descansar en armonía</h2>
+      </div>
+
+      <div class="cards-grid three-col">
+        @for (hab of habitaciones(); track hab.nombre) {
+          <article class="feature-card light-card">
+            <div class="room-icon">{{ hab.icono }}</div>
+            <h3>{{ hab.nombre }}</h3>
+            <p>{{ hab.descripcion }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="section-shell services-section">
+      <div class="section-heading center">
+        <p class="section-kicker">Servicios</p>
+        <h2>Todo lo que hace especial la estadía</h2>
+      </div>
+
+      <div class="cards-grid three-col">
+        @for (serv of servicios(); track serv.titulo) {
+          <article class="feature-card service-card">
+            <h3>{{ serv.titulo }}</h3>
+            <p>{{ serv.detalle }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="section-shell cta-section">
+      <div class="cta-panel">
+        <div>
+          <p class="section-kicker light">Planificá tu visita</p>
+          <h2>¿Querés vivir una experiencia distinta en el Iberá?</h2>
+          <p>
+            Consultanos por disponibilidad, fechas y recomendaciones para tu estadía.
+          </p>
+        </div>
+
+        <div class="cta-actions">
+          <button class="btn btn-primary" (click)="enviarWhatsApp()">Reservar por WhatsApp</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img [src]="logoUrl" alt="Logo Posada Mbarete" class="footer-logo" />
+    <p class="brand">Posada Mbarete</p>
+    <p>San Miguel, Corrientes • Esteros del Iberá</p>
+    <button class="btn btn-primary small" (click)="enviarWhatsApp()">Consultar</button>
+  </footer>
+</div>
