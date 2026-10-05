@@ -16,21 +16,21 @@ import { JaguarWalkerComponent } from '../jaguar-walker/jaguar-walker.component'
           <h2 class="text-4xl md:text-5xl font-light text-[#374151] m-0">Una tierra que vuelve a ser hogar.</h2>
         </div>
 
-        <!-- Jaguar Scroll-Linked Track (Above the first animal) -->
-        <div class="relative w-full h-32 md:h-40 mb-16 border-b border-[#6F7A48]/10 overflow-hidden transition-opacity duration-1000"
+        <!-- Jaguar Walk Zone -->
+        <div class="jaguar-walk-zone relative w-full h-40 md:h-56 mb-16 border-b border-[#6F7A48]/10 overflow-hidden transition-opacity duration-1000"
              [class.opacity-0]="!isVisible"
-             style="background: linear-gradient(0deg, rgba(111,122,72,0) 0%, rgba(111,122,72,0.03) 100%);">
+             style="background-color: #F9F8F6; background-image: linear-gradient(0deg, rgba(111,122,72,0) 0%, rgba(111,122,72,0.03) 100%); overflow-x: clip;">
           
-          <!-- Subtle background elements -->
+          <!-- Vegetación de fondo (Capa trasera) -->
           <div class="absolute bottom-0 w-full h-full opacity-10" 
                style="background-image: radial-gradient(ellipse at 50% 120%, #6F7A48 0%, transparent 50%);">
           </div>
           
-          <!-- Walker Component controlled by scroll -->
-          <app-jaguar-walker></app-jaguar-walker>
+          <!-- Capa media: Yaguareté -->
+          <app-jaguar-walker #jaguar></app-jaguar-walker>
 
-          <!-- Foreground blur for depth -->
-          <div class="absolute bottom-0 w-full h-8 opacity-40 z-10 pointer-events-none filter blur-[1px]" 
+          <!-- Vegetación de primer plano (Capa delantera) -->
+          <div class="absolute bottom-0 w-full h-12 opacity-40 z-10 pointer-events-none filter blur-[1px]" 
                style="background: linear-gradient(0deg, rgba(111,122,72,0.15) 0%, transparent 100%);">
           </div>
         </div>
@@ -111,13 +111,22 @@ import { JaguarWalkerComponent } from '../jaguar-walker/jaguar-walker.component'
     :host {
       display: block;
     }
+    
+    @media (max-width: 767px) {
+      .jaguar-walk-zone {
+        display: none !important;
+      }
+    }
   `]
 })
 export class HabitantesIberaComponent implements AfterViewInit, OnDestroy {
   @ViewChild('section') sectionRef!: ElementRef;
+  @ViewChild('jaguar') jaguarComponent!: JaguarWalkerComponent;
   
   isVisible = false;
   private observer: IntersectionObserver | null = null;
+  private hasJaguarPlayed = false;
+  private timeoutId: any;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -130,17 +139,32 @@ export class HabitantesIberaComponent implements AfterViewInit, OnDestroy {
       this.observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
+            
+            // 1. Mostrar contenido
             this.ngZone.run(() => {
               this.isVisible = true;
               this.cdr.detectChanges();
             });
-            // Stop observing once visible
+
+            // 2. Disparar caminata de Yaguareté si no estamos en mobile
+            if (!this.hasJaguarPlayed && window.innerWidth >= 768) {
+              this.hasJaguarPlayed = true;
+              
+              // Esperar ~1000ms para crear expectativa
+              this.timeoutId = setTimeout(() => {
+                if (this.jaguarComponent) {
+                  this.jaguarComponent.start();
+                }
+              }, 1000);
+            }
+
+            // Dejar de observar para asegurar que ocurra una sola vez
             if (this.sectionRef) {
               this.observer?.unobserve(this.sectionRef.nativeElement);
             }
           }
         });
-      }, { threshold: 0.15 });
+      }, { threshold: 0.05 }); // Se dispara apenas entra un 5% de la sección (soluciona el problema de secciones muy altas)
 
       if (this.sectionRef) {
         this.observer.observe(this.sectionRef.nativeElement);
@@ -151,6 +175,9 @@ export class HabitantesIberaComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.observer) {
       this.observer.disconnect();
+    }
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
     }
   }
 }

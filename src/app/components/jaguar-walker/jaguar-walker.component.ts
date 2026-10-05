@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, ElementRef, HostListener, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, ElementRef, ViewChild, OnDestroy, Inject, PLATFORM_ID, NgZone } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
@@ -6,11 +6,19 @@ import { isPlatformBrowser } from '@angular/common';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="jaguar-wrapper" [style.transform]="'translate3d(' + xPos() + 'px, 0, 0)'">
-      <div class="jaguar-container">
-        <img [src]="frames[currentFrame()]" alt="" aria-hidden="true" class="jaguar-img" />
-        <div class="jaguar-shadow"></div>
-      </div>
+    <div class="jaguar-walker" [class.is-walking]="isWalking()">
+      <video 
+        #jaguarVideo
+        class="jaguar-video"
+        src="assets/fauna/yaguarete/yaguarete.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        aria-hidden="true"
+      ></video>
+      <div class="jaguar-shadow"></div>
     </div>
   `,
   styles: [`
@@ -25,113 +33,97 @@ import { isPlatformBrowser } from '@angular/common';
       z-index: 5;
     }
     
-    .jaguar-wrapper {
+    .jaguar-walker {
       position: absolute;
       bottom: 5px;
-      left: 0px;
+      /* Inicia pegado al borde izquierdo */
+      left: 0; 
       will-change: transform;
-      /* Suavizar el paso atado al scroll para que no pegue tirones */
-      transition: transform 0.15s ease-out;
+      width: clamp(360px, 38vw, 560px);
     }
     
-    .jaguar-container {
-      position: relative;
-      display: inline-block;
+    .jaguar-walker.is-walking {
+      /* Bucle más rápido y constante (10 segundos) */
+      animation: walkAcross 10s linear infinite;
     }
     
-    .jaguar-img {
-      height: clamp(80px, 10vw, 130px);
-      width: auto;
+    .jaguar-video {
+      display: block;
+      width: 100%;
+      height: auto;
       object-fit: contain;
+      pointer-events: none;
       position: relative;
       z-index: 2;
+      /* Magia CSS para borrar fondos blancos/grises sobre fondos claros */
+      mix-blend-mode: multiply;
+      /* Ajuste para que el animal no pierda fuerza por el multiply */
+      filter: contrast(1.1) saturate(1.1); 
     }
     
     .jaguar-shadow {
       position: absolute;
-      bottom: 5px;
-      left: 10%;
-      width: 80%;
-      height: 6px;
-      background: rgba(0, 0, 0, 0.12);
-      filter: blur(4px);
+      bottom: 12px;
+      left: 15%;
+      width: 70%;
+      height: 10px;
+      background: rgba(0, 0, 0, 0.15);
+      filter: blur(6px);
       border-radius: 50%;
       z-index: 1;
     }
     
+    @keyframes walkAcross {
+      /* En 'transform', los porcentajes (%) se calculan según el tamaño del propio yaguareté */
+      /* 0%: Empieza corrido hacia la izquierda justo su propio ancho (-100%), listo para asomar */
+      0% { transform: translate3d(-100%, 0, 0); }
+      /* 100%: Viaja exactamente el ancho de la pantalla (100vw) para esconderse por la derecha */
+      100% { transform: translate3d(100vw, 0, 0); }
+    }
+    
     @media (prefers-reduced-motion: reduce) {
-      .jaguar-wrapper {
-        transition: none;
+      .jaguar-walker.is-walking {
+        animation: none;
+        transform: translate3d(15vw, 0, 0);
       }
     }
   `]
 })
-export class JaguarWalkerComponent implements OnInit {
-  frames = Array.from({length: 5}, (_, i) => 'assets/wildlife/jaguar/jaguar-frame-0' + (i + 1) + '.png');
-  currentFrame = signal(0);
-  xPos = signal(-300); // Start offscreen left
+export class JaguarWalkerComponent {
+  @ViewChild('jaguarVideo') videoRef!: ElementRef<HTMLVideoElement>;
+  isWalking = signal(false);
   
   private isBrowser = false;
 
   constructor(
-    private el: ElementRef,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private ngZone: NgZone
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-  ngOnInit() {
-    if (this.isBrowser) {
-      this.preloadFrames();
-      // Forzar el cálculo inicial para ubicarlo donde debe ir según el scroll actual
-      setTimeout(() => this.onScroll(), 100);
-    }
-  }
-
-  private preloadFrames() {
-    this.frames.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-  }
-
-  @HostListener('window:scroll', ['$event'])
-  @HostListener('window:resize', ['$event'])
-  onScroll() {
-    if (!this.isBrowser) return;
+  start() {
+    if (!this.isBrowser || this.isWalking()) return;
     
+    if (window.innerWidth < 768) return;
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      // Si el usuario no quiere animaciones, dejamos fijo al yaguareté
-      this.xPos.set(100);
-      this.currentFrame.set(0);
-      return;
-    }
-
-    // El elemento padre define el "terreno" por donde camina
-    const rect = this.el.nativeElement.parentElement.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
     
-    // Solo animar si la sección del yaguareté está visible en pantalla
-    if (rect.top < windowHeight && rect.bottom > 0) {
-      // Calcular qué porcentaje de la sección hemos cruzado con el scroll
-      const totalScroll = windowHeight + rect.height;
-      const currentScroll = windowHeight - rect.top;
-      
-      let progress = currentScroll / totalScroll;
-      progress = Math.max(0, Math.min(1, progress));
-      
-      // Mapear ese porcentaje a la posición X en la pantalla
-      // Va desde -150px (izquierda) hasta el ancho total + 150px (derecha)
-      const windowWidth = window.innerWidth;
-      const newX = (progress * (windowWidth + 300)) - 150;
-      
-      this.xPos.set(newX);
-      
-      // Mapear la distancia recorrida en X a los frames (para que parezca que los pasos avanzan con el scroll)
-      // Cada ~35 píxeles de avance, cambia un frame
-      const frameIdx = Math.floor(newX / 35) % this.frames.length;
-      this.currentFrame.set(Math.abs(frameIdx));
+    this.isWalking.set(true);
+    
+    if (!prefersReducedMotion && this.videoRef) {
+      this.ngZone.runOutsideAngular(() => {
+        this.videoRef.nativeElement.play().catch(e => {
+          console.warn("Autoplay bloqueado o falló: ", e);
+        });
+      });
+    }
+  }
+
+  stop() {
+    this.isWalking.set(false);
+    if (this.videoRef) {
+      this.videoRef.nativeElement.pause();
     }
   }
 }
