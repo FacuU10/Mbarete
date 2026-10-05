@@ -70,21 +70,31 @@
       </div>
     </section>
 
-    <section id="experiencias" class="section-shell experiences">
-      <div class="section-heading center">
-        <p class="section-kicker">Experiencias</p>
-        <h2>Descubrí el Iberá con calma y esencia</h2>
-      </div>
+    <section id="experiencias" class="bg-[#7A7A52] py-20 px-6 sm:px-8 lg:px-12 w-full">
+      <div class="max-w-7xl mx-auto w-full">
+        <div class="text-center mb-16">
+          <p class="uppercase tracking-[0.3em] text-white/90 text-sm font-semibold mb-4">E X P E R I E N C I A S</p>
+          <h2 class="text-4xl md:text-5xl font-light text-white m-0">Descubrí el Iberá con calma y esencia</h2>
+        </div>
 
-      <div class="cards-grid four-col">
-        @for (exp of experiencias(); track exp.titulo) {
-          <article class="feature-card dark-card">
-            <h3>{{ exp.titulo }}</h3>
-            <p>{{ exp.desc }}</p>
-          </article>
-        }
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+          @for (exp of experiencias(); track exp.titulo) {
+            <article class="group rounded-2xl overflow-hidden shadow-lg bg-[#6B6B46] hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col cursor-pointer border border-white/5">
+              <div class="relative h-56 overflow-hidden">
+                <img [src]="exp.imagen" [alt]="exp.titulo" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300"></div>
+              </div>
+              <div class="p-6 flex flex-col flex-grow">
+                <h3 class="text-xl font-medium text-white mb-3">{{ exp.titulo }}</h3>
+                <p class="text-white/80 text-sm leading-relaxed m-0">{{ exp.desc }}</p>
+              </div>
+            </article>
+          }
+        </div>
       </div>
     </section>
+
+    <app-habitantes-ibera></app-habitantes-ibera>
 
     <section class="section-shell night-section">
       <div class="night-copy">

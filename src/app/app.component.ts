@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HabitantesIberaComponent } from './components/habitantes-ibera/habitantes-ibera.component';
 
 interface Experiencia {
   titulo: string;
   desc: string;
+  imagen: string;
 }
 
 interface Habitacion {
@@ -26,29 +28,33 @@ interface GaleriaItem {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HabitantesIberaComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.css']
 })
 export class AppComponent {
-  readonly logoUrl = 'assets/logo-verde-fondo-blanco.jpg'; // Logo original
+  readonly logoUrl = 'assets/logo-verde-fondo-blanco.jpg'; 
 
   readonly experiencias = signal<Experiencia[]>([
     {
-      titulo: 'Amaneceres en los Esteros',
-      desc: 'La luz temprana del humedal, el olor del monte y el silencio del río convierten cada salida en una experiencia íntima y memorable.'
+      titulo: 'La esencia de Mbarete',
+      desc: 'Nuestra arquitectura tradicional de amplias galerías y cálida madera te da la bienvenida. Un refugio auténtico que respeta su entorno y te invita a desconectar desde el primer instante.',
+      imagen: 'assets/21.1.jpg'
     },
     {
-      titulo: 'Fauna y naturaleza',
-      desc: 'Aves, yacarés, carpinchos y paisajes únicos que muestran la riqueza del Parque Nacional Iberá.'
+      titulo: 'Paisajes para contemplar',
+      desc: 'El humedal invita a detenerse. Aquí el tiempo transcurre distinto, ofreciendo el escenario perfecto para compartir una pausa, escuchar el silencio y conectar profundamente con la naturaleza correntina.',
+      imagen: 'assets/21.0.jpg'
     },
     {
-      titulo: 'Gastronomía local',
-      desc: 'Sabores regionales y cocina casera con el encanto de la vida en el campo chaqueño.'
+      titulo: 'Descanso con identidad',
+      desc: 'Habitaciones cálidas que invitan al reposo luego de un día bajo el sol. Detalles rústicos y comodidades pensadas para brindarte un descanso profundo, resguardando la auténtica identidad del lugar.',
+      imagen: 'assets/21.2.jpg'
     },
     {
-      titulo: 'Paseos tranquilos',
-      desc: 'Recorridos lentos para respirar aire puro, descansar y disfrutar de cada rincón del entorno.'
+      titulo: 'Rincones para disfrutar',
+      desc: 'Interiores serenos donde la tranquilidad cobra protagonismo. Vitrales coloridos y grandes ventanales desdibujan el límite entre adentro y afuera, enmarcando la belleza del paisaje para disfrutarlo sin prisa.',
+      imagen: 'assets/23.jpg'
     }
   ]);
 
