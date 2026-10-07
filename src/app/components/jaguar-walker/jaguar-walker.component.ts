@@ -6,19 +6,21 @@ import { isPlatformBrowser } from '@angular/common';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="jaguar-walker" [class.is-walking]="isWalking()">
-      <video 
-        #jaguarVideo
-        class="jaguar-video"
-        src="assets/fauna/yaguarete/yaguarete.mp4"
-        autoplay
-        muted
-        loop
-        playsinline
-        preload="auto"
-        aria-hidden="true"
-      ></video>
-      <div class="jaguar-shadow"></div>
+    <div class="jaguar-blend-wrapper">
+      <div class="jaguar-walker" [class.is-walking]="isWalking()">
+        <video 
+          #jaguarVideo
+          class="jaguar-video"
+          src="assets/fauna/yaguarete/yaguarete.mp4"
+          autoplay
+          [muted]="true"
+          loop
+          playsinline
+          preload="auto"
+          aria-hidden="true"
+        ></video>
+        <div class="jaguar-shadow"></div>
+      </div>
     </div>
   `,
   styles: [`
@@ -33,17 +35,27 @@ import { isPlatformBrowser } from '@angular/common';
       z-index: 5;
     }
     
+    .jaguar-blend-wrapper {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      /* Mover mix-blend-mode al contenedor que no tiene animación para evitar bug de iOS */
+      mix-blend-mode: multiply;
+      isolation: isolate;
+    }
+    
     .jaguar-walker {
       position: absolute;
       bottom: 5px;
-      /* Inicia pegado al borde izquierdo */
       left: 0; 
       will-change: transform;
       width: clamp(360px, 38vw, 560px);
     }
     
     .jaguar-walker.is-walking {
-      /* Bucle más rápido y constante (10 segundos) */
       animation: walkAcross 10s linear infinite;
     }
     
@@ -55,9 +67,6 @@ import { isPlatformBrowser } from '@angular/common';
       pointer-events: none;
       position: relative;
       z-index: 2;
-      /* Magia CSS para borrar fondos blancos/grises sobre fondos claros */
-      mix-blend-mode: multiply;
-      /* Ajuste para que el animal no pierda fuerza por el multiply */
       filter: contrast(1.1) saturate(1.1); 
     }
     
@@ -80,13 +89,6 @@ import { isPlatformBrowser } from '@angular/common';
       /* 100%: Viaja exactamente el ancho de la pantalla (100vw) para esconderse por la derecha */
       100% { transform: translate3d(100vw, 0, 0); }
     }
-    
-    @media (prefers-reduced-motion: reduce) {
-      .jaguar-walker.is-walking {
-        animation: none;
-        transform: translate3d(15vw, 0, 0);
-      }
-    }
   `]
 })
 export class JaguarWalkerComponent {
@@ -104,14 +106,10 @@ export class JaguarWalkerComponent {
 
   start() {
     if (!this.isBrowser || this.isWalking()) return;
-    
-    if (window.innerWidth < 768) return;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
     this.isWalking.set(true);
     
-    if (!prefersReducedMotion && this.videoRef) {
+    if (this.videoRef) {
       this.ngZone.runOutsideAngular(() => {
         this.videoRef.nativeElement.play().catch(e => {
           console.warn("Autoplay bloqueado o falló: ", e);

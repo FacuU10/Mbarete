@@ -111,12 +111,6 @@ import { JaguarWalkerComponent } from '../jaguar-walker/jaguar-walker.component'
     :host {
       display: block;
     }
-    
-    @media (max-width: 767px) {
-      .jaguar-walk-zone {
-        display: none !important;
-      }
-    }
   `]
 })
 export class HabitantesIberaComponent implements AfterViewInit, OnDestroy {
@@ -146,8 +140,8 @@ export class HabitantesIberaComponent implements AfterViewInit, OnDestroy {
               this.cdr.detectChanges();
             });
 
-            // 2. Disparar caminata de Yaguareté si no estamos en mobile
-            if (!this.hasJaguarPlayed && window.innerWidth >= 768) {
+            // 2. Disparar caminata de Yaguareté
+            if (!this.hasJaguarPlayed) {
               this.hasJaguarPlayed = true;
               
               // Esperar ~1000ms para crear expectativa
