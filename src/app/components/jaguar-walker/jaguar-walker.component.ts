@@ -1,26 +1,53 @@
-import { Component, ChangeDetectionStrategy, signal, ElementRef, ViewChild, OnDestroy, Inject, PLATFORM_ID, NgZone } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, ChangeDetectionStrategy, signal, ElementRef, ViewChild, Inject, PLATFORM_ID, NgZone } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-jaguar-walker',
   standalone: true,
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="jaguar-blend-wrapper">
-      <div class="jaguar-walker" [class.is-walking]="isWalking()">
-        <video 
-          #jaguarVideo
-          class="jaguar-video"
-          src="assets/fauna/yaguarete/yaguarete.mp4"
-          autoplay
-          [muted]="true"
-          loop
-          playsinline
-          preload="auto"
-          aria-hidden="true"
-        ></video>
-        <div class="jaguar-shadow"></div>
+    <!-- Botón de sonido -->
+    <button 
+      class="sound-toggle-btn"
+      (click)="toggleSound()"
+      [attr.aria-label]="isMuted() ? 'Activar sonido de los esteros' : 'Silenciar sonido de los esteros'"
+      [class.is-active]="!isMuted()"
+    >
+      <div class="icon-wrapper">
+        <span class="icon">{{ isMuted() ? '🔇' : '🔊' }}</span>
       </div>
+      <span class="text">{{ isMuted() ? 'Escuchar los esteros' : 'Sonido activado' }}</span>
+    </button>
+
+    <div class="jaguar-walker">
+      <!-- Video principal (Visual, a pantalla completa) -->
+      <video 
+        #jaguarVideo
+        class="jaguar-video"
+        src="assets/fauna/yaguarete/yaguarete-silent.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        aria-hidden="true"
+      ></video>
+
+      <!-- Archivo de sonido (Oculto, usando el video viejo de fondo) -->
+      <audio 
+        #jungleAudio
+        src="assets/fauna/yaguarete-audio.mp4"
+        loop
+        preload="auto"
+      ></audio>
+
+      <!-- Rugido del yaguareté -->
+      <audio 
+        #roarAudio
+        src="assets/fauna/yaguarete/jaguar-sound.webm"
+        preload="auto"
+      ></audio>
     </div>
   `,
   styles: [`
@@ -32,69 +59,87 @@ import { isPlatformBrowser } from '@angular/common';
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 5;
+    }
+
+    /* Estilos del botón de sonido */
+    .sound-toggle-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 50;
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(111, 122, 72, 0.2);
+      border-radius: 9999px;
+      padding: 8px 16px 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #6F7A48;
+      font-family: inherit;
+      backdrop-filter: blur(4px);
+    }
+
+    .sound-toggle-btn:hover {
+      background: #FFFFFF;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(111,122,72,0.15);
+    }
+
+    .sound-toggle-btn.is-active {
+      background: #6F7A48;
+      color: white;
+      border-color: #6F7A48;
+    }
+
+    .sound-toggle-btn .icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+    }
+
+    .sound-toggle-btn .icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .sound-toggle-btn .text {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
     }
     
-    .jaguar-blend-wrapper {
+    .jaguar-walker {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none;
-      /* Mover mix-blend-mode al contenedor que no tiene animación para evitar bug de iOS */
-      mix-blend-mode: multiply;
-      isolation: isolate;
-    }
-    
-    .jaguar-walker {
-      position: absolute;
-      bottom: 5px;
-      left: 0; 
-      will-change: transform;
-      width: clamp(360px, 38vw, 560px);
-    }
-    
-    .jaguar-walker.is-walking {
-      animation: walkAcross 10s linear infinite;
     }
     
     .jaguar-video {
       display: block;
       width: 100%;
-      height: auto;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover; 
+      object-position: center 75%; /* Sube el video apenas un poco más para recortar el borde inferior */
       pointer-events: none;
       position: relative;
       z-index: 2;
-      filter: contrast(1.1) saturate(1.1); 
-    }
-    
-    .jaguar-shadow {
-      position: absolute;
-      bottom: 12px;
-      left: 15%;
-      width: 70%;
-      height: 10px;
-      background: rgba(0, 0, 0, 0.15);
-      filter: blur(6px);
-      border-radius: 50%;
-      z-index: 1;
-    }
-    
-    @keyframes walkAcross {
-      /* En 'transform', los porcentajes (%) se calculan según el tamaño del propio yaguareté */
-      /* 0%: Empieza corrido hacia la izquierda justo su propio ancho (-100%), listo para asomar */
-      0% { transform: translate3d(-100%, 0, 0); }
-      /* 100%: Viaja exactamente el ancho de la pantalla (100vw) para esconderse por la derecha */
-      100% { transform: translate3d(100vw, 0, 0); }
     }
   `]
 })
 export class JaguarWalkerComponent {
   @ViewChild('jaguarVideo') videoRef!: ElementRef<HTMLVideoElement>;
-  isWalking = signal(false);
+  @ViewChild('jungleAudio') audioRef!: ElementRef<HTMLAudioElement>;
+  @ViewChild('roarAudio') roarRef!: ElementRef<HTMLAudioElement>;
   
+  isMuted = signal(true);
   private isBrowser = false;
 
   constructor(
@@ -104,24 +149,50 @@ export class JaguarWalkerComponent {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-  start() {
-    if (!this.isBrowser || this.isWalking()) return;
+  toggleSound() {
+    const audio = this.audioRef?.nativeElement;
+    const roar = this.roarRef?.nativeElement;
+    if (!audio) return;
 
-    this.isWalking.set(true);
+    const newMutedState = !this.isMuted();
+    this.isMuted.set(newMutedState);
     
+    audio.muted = newMutedState;
+    audio.volume = 1.0;
+    
+    if (audio.paused && !newMutedState) {
+       audio.play().catch(() => {});
+    }
+
+    if (roar && !newMutedState) {
+      // Reproducir el rugido solo cuando se activa el sonido, 
+      // reseteándolo al principio si ya se había reproducido
+      roar.currentTime = 0;
+      roar.volume = 0.8; // Un poco más bajo que el ambiente si es muy fuerte
+      roar.play().catch(() => {});
+    }
+  }
+
+  start() {
+    if (!this.isBrowser) return;
+    
+    // Arrancamos el video principal (visual) y el audio
     if (this.videoRef) {
       this.ngZone.runOutsideAngular(() => {
-        this.videoRef.nativeElement.play().catch(e => {
-          console.warn("Autoplay bloqueado o falló: ", e);
-        });
+        this.videoRef.nativeElement.play().catch(() => {});
+      });
+    }
+    if (this.audioRef) {
+      this.ngZone.runOutsideAngular(() => {
+        this.audioRef.nativeElement.muted = true;
+        this.audioRef.nativeElement.play().catch(() => {});
       });
     }
   }
 
   stop() {
-    this.isWalking.set(false);
-    if (this.videoRef) {
-      this.videoRef.nativeElement.pause();
-    }
+    if (this.videoRef) this.videoRef.nativeElement.pause();
+    if (this.audioRef) this.audioRef.nativeElement.pause();
+    if (this.roarRef) this.roarRef.nativeElement.pause();
   }
 }

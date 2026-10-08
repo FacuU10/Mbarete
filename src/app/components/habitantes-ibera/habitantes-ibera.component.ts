@@ -17,21 +17,16 @@ import { JaguarWalkerComponent } from '../jaguar-walker/jaguar-walker.component'
         </div>
 
         <!-- Jaguar Walk Zone -->
-        <div class="jaguar-walk-zone relative w-full h-40 md:h-56 mb-16 border-b border-[#6F7A48]/10 overflow-hidden transition-opacity duration-1000"
+        <div class="jaguar-walk-zone relative w-full h-[300px] md:h-[450px] mb-16 border-b border-[#6F7A48]/20 overflow-hidden transition-opacity duration-1000 shadow-[inset_0_-20px_40px_rgba(111,122,72,0.05)]"
              [class.opacity-0]="!isVisible"
-             style="background-color: #F9F8F6; background-image: linear-gradient(0deg, rgba(111,122,72,0) 0%, rgba(111,122,72,0.03) 100%); overflow-x: clip;">
+             style="background-color: #000; overflow-x: clip;">
           
-          <!-- Vegetación de fondo (Capa trasera) -->
-          <div class="absolute bottom-0 w-full h-full opacity-10" 
-               style="background-image: radial-gradient(ellipse at 50% 120%, #6F7A48 0%, transparent 50%);">
-          </div>
-          
-          <!-- Capa media: Yaguareté -->
+          <!-- Capa media: Yaguareté a pantalla completa -->
           <app-jaguar-walker #jaguar></app-jaguar-walker>
-
-          <!-- Vegetación de primer plano (Capa delantera) -->
-          <div class="absolute bottom-0 w-full h-12 opacity-40 z-10 pointer-events-none filter blur-[1px]" 
-               style="background: linear-gradient(0deg, rgba(111,122,72,0.15) 0%, transparent 100%);">
+          
+          <!-- Viñeta oscura a los costados para profundidad -->
+          <div class="absolute inset-0 z-10 pointer-events-none opacity-40"
+               style="background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.1) 100%);">
           </div>
         </div>
 
